@@ -1,8 +1,8 @@
 # LLM-Prompt-Manager 开发笔记
 
-## 前端
-
 [仓库地址](https://github.com/S1lverAkatsuki/llm-prompt-manager)
+
+## 前端
 
 ### Vue 的加载时间
 
@@ -365,4 +365,4 @@ let data_path = app.path().resolve("my_data.json", BaseDirectory::Document);
 
 两种调用效果一致，都是返回 `C:\Users\<用户名>\Documents\my_data.json` （Windows）
 第一种调用先拿到的是文档文件夹的位置，然后再拼上自定义的配置文件位置。
-第二种就是 `app.path()` 拿到 `PathResolve` 对象，在调用链上把文档文件夹目录 `BaseDirectory::Document` （这个枚举由 `PathResolve` 访问，单独访问枚举值会有一屁股问题）和配置文件名称拼一起。
+第二种就是 `app.path()` 拿到 `PathResolve` 对象，在调用链上把文档文件夹目录 `BaseDirectory::Document` （这个枚举最好是由 `PathResolve` 对象访问，单独访问枚举值会有一屁股问题）和配置文件名称拼一起。
