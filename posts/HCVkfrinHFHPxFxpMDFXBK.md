@@ -7,7 +7,7 @@
 
 我想实现的功能是：**当怪物血量小于某个定值的时候，打印一个提醒我该超解收尾的系统提示**。
 
-![提示](/posts/imgs/fwwcaoqELhMAqfZRkQd3zy.png)
+![提示](/posts/imgs/rbF8RHHy3z8UbVRqvmhTim.png)
 
 拿到库以后，就决定去找有没有相关的 API，LuaF 并没有提供直接的「访问怪物血量」的函数。
 试着去查一下 `sdk.d.lua`。
@@ -62,7 +62,7 @@
 使用 CE 查找血量，但是无法确认它相对于怪物基址（可用 LuaF 提供的方法获取）的偏移。*大模型猜的全错🤖👎*
 之后本征给我了个 CT 表，可以从里面获取一个地址的注释和相关的指针链。比如我正在找的怪物当前血量：
 
-![指针链](/posts/imgs/aeXWR9vMu7s5rk3RK5qN1p.png)
+![指针链](/posts/imgs/jwxDqBefUmgQxSoRcVfNuz.png)
 
 其中的 `1360e0080` 是可以被获取的**怪物基址**
 `0x7670` 和 `0x64` 是两个硬编码的偏移。
