@@ -16,7 +16,7 @@ tower-http = { version = "0.6", features = ["cors", "fs"] }
 
 ## 最简单的样例
 
-> 来自[官网](https://docs.rs/axum/latest/axum/) 上的样例
+> 来自[官网](https://docs.rs/axum/latest/axum/)上的样例
 
 ```rust
 use axum::{
