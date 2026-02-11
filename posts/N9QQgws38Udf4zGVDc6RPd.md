@@ -34,7 +34,7 @@ async fn main() {
 }
 ```
 
-全是**异步函数**，很显然你不想要在读写的时候卡死整个后端吧。
+无论是主函数还是处理函数，全是**异步**的，很显然你不想要在读写的时候卡死整个后端吧。
 
 `Router::new()` 创建一个路由对象，后面的 `route` 方法就是把每一层的路由标注出来，对同一个路由只能用一行：
 
@@ -97,7 +97,7 @@ let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
 axum::serve(listener, app).await.unwrap();
 ```
 
-正式启动服务，程序在这里无限循环阻塞下面的部分。
+正式启动服务，程序在这里无限循环，阻塞下面的部分。
 
 ## POST 请求处理
 
@@ -109,13 +109,13 @@ axum::serve(listener, app).await.unwrap();
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-    .route("/", post(handler));
+        .route("/", post(handler));
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
 // 先省略 handler 的内容
-// 很显然你不能直接拿这个过编
+// 很显然你不能直接拿这个过编译
 ```
 
 前端部分这样写：
@@ -148,13 +148,11 @@ const send = async () => {
 
 错误处理写的很详尽。*我不是写教程一个 `try-catch` 就解决了，懒狼一条*
 
-前端会给后端发一个 JSON：
+前端会给后端发一个 JSON *长得不太像，但仍然是合法的*：
 
 ```json
 "Hello Backend"
 ```
-
-因为仅发了一个字符串所以没有任何大括号。*长得不太像 JSON*
 
 ---
 
@@ -224,16 +222,18 @@ const send = async () => {
 ```rust
 #[derive(Deserialize, Serialize)]
 struct Data {
-  message: String,
+    message: String,
+    // 这里的字段名和前面传的一样
 }
 
 async fn handler(Json(payload): Json<Data>) -> StatusCode {
-  println!("{}", payload.message);
-  StatusCode::OK
+    println!("{}", payload.message);
+    StatusCode::OK
 }
 ```
 
-这里必须定义一个和前端一模一样字段名的结构体 `Data`，它就是那个对象的映射，需要实现序列化与反序列化。
+这里必须定义一个和前端一模一样字段名的结构体 `Data`，它就是那个对象的映射。
+结构体要实现序列化与反序列化。
 之后就是简单替换参数就好了。
 
 ## 请求处理函数的返回值
@@ -255,20 +255,20 @@ async fn handler(Json(payload): Json<Data>) -> StatusCode {
 
 1. 不需要返回数据 -> `StatusCode`
 2. 需要返回数据 -> `Json<...>` （没有错误）/ `Result<Json<...>, StatusCode>`（有错误）
-3. 需要自定义非 `200 OK` 的成功码 -> `(StatusCode, Json<T>)`
+3. 需要自定义非 `200 OK` 的成功码（比如 `201 Created`）-> `(StatusCode, Json<T>)`
 
-这里都传的 JSON 对象，除了写样例和返回 HTML 文件，我感觉都不可能裸出数据，哪怕就是传一个字符串。
+这里都传的 JSON 对象，除了写样例和返回 HTML 文件，最好不要裸传数据，哪怕就是传一个字符串。
 
 ## CORS
 
 跨域资源调用。*很高深的名词对吧*
-很简单的例子：在 `localhost:5173` 的网页去访问 `localhost:3000` 的后端就会出来，因为系统可能认为你访问了不该访问的东西。
+很简单的例子：在 `localhost:5173` 的网页去访问 `localhost:3000` 的后端就会出来 CORS 错误，因为系统可能认为你访问了不该访问的东西。
 用 Axum 的中间件 [CorsLayer](https://docs.rs/tower-http/latest/tower_http/cors/index.html) 就可以解决：
 
 ```rust
 let cors = CorsLayer::new()
-    .allow_origin(Any) // 允许任何域名
-    .allow_methods(Any) // 允许任何 HTTP 方法
+    .allow_origin(Any)   // 允许任何域名
+    .allow_methods(Any)  // 允许任何 HTTP 方法
     .allow_headers(Any); // 允许任何标头
 
 let app = Router::new()
@@ -298,19 +298,19 @@ struct AppState {
 }
 
 async fn get_handler(State(state): State<AppState>) -> Json<i32> {
-  let count = state.count.lock().unwrap();
-  Json(*count)
+    let count = state.count.lock().unwrap();
+    Json(*count)
 }
 
 async fn set_handler(State(state): State<AppState>) -> Json<i32> {
-  let mut count = state.count.lock().unwrap();
-  *count += 1;
-  Json(*count)
+    let mut count = state.count.lock().unwrap();
+    *count += 1;
+    Json(*count)
 }
 ```
 
 哦，还不是一模一样。
-给 `AppState` 里面的字段包锁，而不是和 Tauri 那样给整个 `AppState` 包锁。因为这里是互联网后端，肯定有远超过一个的用户，我只读一个字段要锁住其他字段的读写吗？
+给 `AppState` 里面的字段包锁，而不是和 Tauri 那样给整个 `AppState` 包锁。因为这里是互联网后端，肯定有远超过一个的用户。难道我只读一个字段要锁住其他字段的读写吗？
 由于 Axum 会把状态在不同对象间复制，所以需要实现 `Clone` Trait。
 处理函数用和对 JSON 对象处理一样的解包拿到值。
 主函数里面记得实例化和挂载：
