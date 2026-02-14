@@ -241,11 +241,7 @@ async fn handler(Json(payload): Json<Data>) -> StatusCode {
 你有没有注意到，我在上面的样例中写的返回值是不一样的，`GET` 处理函数返回的是字符串 `&'static str`，`POST` 处理返回的是状态码 `StatusCode`。
 按理说任何一个后端给前端的东西都应该有状态码啊。
 
-其实是因为 Axum 默认给一些基本类型（`&'static str`，`String`，`Json<...>`，`Html`，元组，`Result`）实现了 `IntoResponse` 这个 Trait，把内容转换成请求对象：
-返回 `String` ，Axum 会自动调用其 `into_response` 方法，将字符串作为响应体，并将 `Content-Type` 标头设置为 `text/plain`
-返回 `Json<...>` 时，Axum 会给你序列化，设置标头为 `application/json`。
-返回元组，一般来说是第一个状态码，第二个内容，比如 `(StatusCode, Json<...>)`，
-返回 `Result`，其实应该是 `Result<impl IntoResponse, impl IntoResponse>`，结果和错误都可以组成请求发给前端。
+其实是因为 Axum 默认给一些基本类型（`&'static str`，`String`，`Json<...>`，`Html`，元组，`Result`）实现了 `IntoResponse` 这个 Trait，把内容转换成请求对象。
 
 状态码默认都是 `200 OK`。
 
@@ -255,7 +251,7 @@ async fn handler(Json(payload): Json<Data>) -> StatusCode {
 
 1. 不需要返回数据 -> `StatusCode`
 2. 需要返回数据 -> `Json<...>` （没有错误）/ `Result<Json<...>, StatusCode>`（有错误）
-3. 需要自定义非 `200 OK` 的成功码（比如 `201 Created`）-> `(StatusCode, Json<T>)`
+3. 需要自定义非 `200 OK` 的成功码 *这种情况非常少*（比如 `201 Created`）-> `(StatusCode, Json<T>)`
 
 这里都传的 JSON 对象，除了写样例和返回 HTML 文件，最好不要裸传数据，哪怕就是传一个字符串。
 
@@ -311,6 +307,9 @@ async fn set_handler(State(state): State<AppState>) -> Json<i32> {
 
 哦，还不是一模一样。
 给 `AppState` 里面的字段包锁，而不是和 Tauri 那样给整个 `AppState` 包锁。因为这里是互联网后端，肯定有远超过一个的用户。难道我只读一个字段要锁住其他字段的读写吗？
+
+**Tip**: 这里的 `Arc` 和 `Mutex` 都是 `tokio::sync::` 提供的异步锁。别用标准库的同步锁，用了会报 `Send` 没被实现的错误。*是本征给我讲的原理*
+
 由于 Axum 会把状态在不同对象间复制，所以需要实现 `Clone` Trait。
 处理函数用和对 JSON 对象处理一样的解包拿到值。
 主函数里面记得实例化和挂载：
@@ -324,3 +323,32 @@ let app = Router::new()
     .route(...)
     .with_state(state);
 ```
+
+如果是 `POST` 请求或者是别的本身就有参数的函数，记得一定要把 `State` 放第一位，比如：
+
+```rust
+async fn set_handler(State(state): State<AppState>, Json(num): Json<i32>) -> Json<i32> {
+    let mut count = state.count.lock().unwrap();
+    *count += num;
+    Json(*count)
+}
+```
+
+## 更好的 URL 表示
+
+比起使用裸字符串，这也有类似于 `PathBuf` 那样的封装类。
+虽然这不是 `Axum` 的，但仍然属于 Rust 网络编程。
+
+- **Before**:
+
+  ```rust
+  let port = 3000;
+  let addr = format!("127.0.0.1:{}", port);
+  ```
+
+- **After**:
+
+  ```rust
+  let port = 3000;
+  let addr = std::net::SocketAddr::from(([127, 0, 0, 1], port));
+  ```

@@ -17,14 +17,14 @@ Git 操作数据的基础单位。
 
 指向分支的指针。
 
-![alt text](/posts/imgs/58PNHpJFroiHqtcwrfLjLS.png)
+![alt text](/posts/imgs/vvt6vCVw4J4ciRg9rao7mk.png)
 
 图里面的 HEAD 指向 main 分支指向的提交 d4e5f6g
 
 使用 `git checkout <分支名/哈希值>` 来移动 HEAD 指针位置。
 当直接指向某个哈希值所对应的节点时，这时中间没有分支衔接，称为分离 HEAD 状态。
 
-![alt text](/posts/imgs/k5p26s91cfHkPkfwYTgBJf.png)
+![alt text](/posts/imgs/ocVVSjXu9KQiiNdcpbNu14.png)
 
 HEAD 直接指向 b2c3d4e，此时新提交无法被持久化，30-90 天后被垃圾回收清理。
 
@@ -38,13 +38,13 @@ HEAD 直接指向 b2c3d4e，此时新提交无法被持久化，30-90 天后被�
 
 ### `git checkout`
 
-![alt text](/posts/imgs/5bhU93G6sYR55uTa5Asqjj.png)
+![alt text](/posts/imgs/7cV25VvUeQCZqXPbpyxjKE.png)
 
 单纯移动头指针，不改变历史记录。
 
 ### `git reset`
 
-![alt text](/posts/imgs/1Rr7HgnYhj6ak3NeGrbHXP.png)
+![alt text](/posts/imgs/9zsEyencgUzcGb1MjdBg23.png)
 
 移动分支的标签，比分支标签所在的提交晚的提交会准备进垃圾回收。字如其名一般用来撤销。
 有三个参数
@@ -57,7 +57,7 @@ HEAD 直接指向 b2c3d4e，此时新提交无法被持久化，30-90 天后被�
 
 向前创建一个全新的提交来抵消之前的更改。
 
-![alt text](/posts/imgs/oCTRpnzevkuVUokap2kqFM.png)
+![alt text](/posts/imgs/7acXnf1WwysN2wsA7uqY7N.png)
 
 图中 revert 提交就是创建了一个 c2 提交的相反操作。
 
@@ -65,12 +65,12 @@ HEAD 直接指向 b2c3d4e，此时新提交无法被持久化，30-90 天后被�
 
 这是 merge 的结果：
 
-![alt text](/posts/imgs/s7sXDb3t5tdxkJuYBFUKuF.png)
+![alt text](/posts/imgs/nGWcRUV9wdE5TiBEa9GRr2.png)
 
 两个分支合并到一个。
 这是 rebase 的结果：
 
-![alt text](/posts/imgs/uvF2r7Uwm68gG9cwu4SiEj.png)
+![alt text](/posts/imgs/xzEYtsRNL1Sd5EGR8gEcAD.png)
 
 把一个分支的提交再在主分支上做一遍。
 注意 B，C 和 B'，C' 只在行为上是一致的，哈希值不同，因为哈希计算要用父节点。
