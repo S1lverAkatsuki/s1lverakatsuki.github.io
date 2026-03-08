@@ -39,7 +39,18 @@ lazy_static! {
 ```
 
 尽管说并不是真正的编译期计算，但仍然比一个动态的变量访问开销小。
-当然，更推荐使用自带的 `std::sync::OnceLock`，更符合直觉。
+当然，更推荐使用自带的 `std::sync::OnceLock` 或是 `std::sync::LazyLock`，更符合直觉：
+
+```rust
+use std::sync::LazyLock;
+
+static BAR: LazyLock<String> = LazyLock::new(|| {
+    use sha2::{Digest, Sha512};
+    let mut hasher = Sha512::new();
+    hasher.update(FOO.to_be_bytes());
+    format!("{:x}", hasher.finalize())
+});
+```
 
 ## `pub(crate)` 组织代码
 
@@ -168,6 +179,22 @@ fn insert_user(user: User) -> Result<(), Box<dyn Error>> {
 注意这里每个 `handler` 都打开了一遍数据库，这只是样例写法。
 实际最好把数据库连接放进 Axum 的 `state` 里面，不然卡飞你。
 
+**Tip**: 如果直接放会因为连接没有实现 `Send` Trait 导致必须要套锁才能访问，推荐使用 `r2d2_sqlite` 的连接池解决：
+
+```rust
+#[tokio::main]
+async fn main() {
+    let manager = r2d2_sqlite::SqliteConnectionManager::file("a.db");
+    let pool = r2d2::Pool::new(manager).unwrap();
+
+    let app = Router::new()
+        // ...
+        .with_state(pool); // 将 pool 注入 state
+
+    // ...
+}
+```
+
 ## 后端项目组织
 
 不得不说，Darksky 的项目组织能力非常强大。
@@ -175,7 +202,8 @@ fn insert_user(user: User) -> Result<(), Box<dyn Error>> {
 
 对此进行扩展可得到一个后端处理函数的返回值 `Result<impl IntoResponse, (StatusCode, Vec<u8>)`。
 值就不用管了，自己实现转请求去。
-错误类型把状态码包进去，方便前端用 `response.ok` 之类的判断，`Vec<u8>` 是因为这里走了 Protobuf，出去的是二进制信息。
+错误类型把状态码包进去，方便前端用 `response.ok` 之类的判断。
+`Vec<u8>` 是因为这里走了 Protobuf，出去的是二进制信息。
 
 在项目内可以用 `map_err` 把错误都丢给前端显示：
 
@@ -198,6 +226,7 @@ fn foo(...) -> Result<impl IntoResponse, (StatusCode, Vec<u8>) {
     };
 
     // 成功的返回值，可以自定义返回的 http 请求头
+    // 请求体同样是编码成 Protobuf 的二进制
     Ok((
         HeaderMap::from_iter([(
             header::CONTENT_TYPE,
@@ -351,7 +380,7 @@ fn encode() -> Vec<u8> {
 
 ---
 
-如果觉得到处 `include` 丑陋，这里有一个办法：
+如果觉得到处 `include!` 丑陋，这里有一个办法：
 
 ```rust
 // src/pb/mod.rs
@@ -374,6 +403,7 @@ use crate::pb::a::Person;  // 这样按需引入
 - `POST` 成功创建资源：`201 Created`
 - 后端出问题：`500 Internal Server Error`
 - 参数出问题：`400 Bad Request`
+- 未登录：`401 Unauthorized`
 - 权限不足：`403 Forbidden`
 - 请求的不存在：`404 Not Found` *最熟悉的一集*
 
