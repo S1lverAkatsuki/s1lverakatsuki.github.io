@@ -291,10 +291,10 @@ prost-build = "0.14.1"
 
 这就直接是官网的样例了：
 
-```protobuf
+```text
 // a.proto
 
-edition = "2023";
+edition = "2023";   // 代表使用 Proto3 语法
 
 message Person {
   string name = 1;
