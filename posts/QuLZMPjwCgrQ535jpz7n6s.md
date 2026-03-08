@@ -291,7 +291,7 @@ prost-build = "0.14.1"
 
 这就直接是官网的样例了：
 
-```proto
+```protobuf
 // a.proto
 
 edition = "2023";
@@ -368,7 +368,7 @@ use crate::pb::a::Person;  // 这样按需引入
 
 > 参考：[HTTP 响应状态码](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Reference/Status)
 
-就用这三种就行了：
+就用这几种就行了：
 
 - 什么问题都没有：`200 OK`
 - `POST` 成功创建资源：`201 Created`
@@ -406,7 +406,7 @@ env::var("USER_PWD").unwrap_or_else(|_| "1234567890".to_string());
 
   fn main() {
       dotenv().ok();
-      env::var("user_PWD").unwrap();  // 114514
+      env::var("USER_PWD").unwrap();  // 114514
   }
   ```
 
@@ -419,15 +419,15 @@ env::var("USER_PWD").unwrap_or_else(|_| "1234567890".to_string());
 ```rust
 #[derive(Deserialize)]
 struct Config {
-    database_url: String,
-    port: u16,
+    user_pwd: String
 }
 let config = envy::from_env::<Config>().unwrap();
+let user_pwd = config.user_pwd;
 ```
 
 ## Axum 默认包大小与更改方法
 
-在做测试的时候，发现一个诡异的现象，有一张 JPG 老传不上去，经过双盲测试后我发现原来是图片太大了，2K 的图片呢。
+在做测试的时候，发现一个诡异的现象，有一张 JPG 老传不上去，经过控制变量测试后我发现原来是图片太大了，2K 的图片呢。
 然后发现 Axum 居然默认最大只能传 **2 MB** 的请求体，图片好几 MB 肯定传不上。
 用下面的语句改的更大一些：
 
