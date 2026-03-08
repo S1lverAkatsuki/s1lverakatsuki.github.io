@@ -21,7 +21,10 @@
 }
 ```
 
-### 触发原生元素的事件
+这是 AI 给的代码，所以考虑到了**屏幕阅读器**的情况，上面的可以被屏幕阅读器读出来。
+如果不在意这点，一个 `display: none;` 就够了。
+
+### 前端上传文件 & 触发原生元素的事件
 
 这里有个 HTML 的 DOM：
 
@@ -35,6 +38,8 @@
 ```ts
 const triggerFileSelect = () => fileSelectorRef.value?.click();
 ```
+
+**Tip**：如果连续两次上传同一个文件，DOM 的 `changed` 事件不会触发，记得点击前先清空值就好了。
 
 ### 多状态类型
 
@@ -52,9 +57,11 @@ const user1: User = ...;
 if (user1.type === "student") {
   // 可以访问 user1.score 字段
   // ...
-} else {
+} else if (user1.type === "teacher") {
   // 可以访问 user1.class 字段
   // ...
+} else {
+  assertNever(user1); // 如果 user1 没被完全处理，这里会报类型错误
 }
 ```
 
@@ -95,6 +102,9 @@ const save = async (payload: string) => {
 
 这里没做任何错误处理和预防，最好对 `downloadUrl` 进行检查。
 如果存在可以靠 `URL.revokeObjectURL(downloadUrl)` 和手动置 `downloadUrl = null` 释放 `ObjectURL`。
+`blob` 的生命周期跟着整个页面，不按上面的放掉会被一直托管直到页面关闭。
+
+另外，有个 [文件系统 API](https://developer.mozilla.org/zh-CN/docs/Web/API/File_System_API) ，但是那仅能在 HTTPS 下使用，而本地 `localhost` 并不算在内，所以不作为一个可用的解。
 
 ## 后端部分
 
