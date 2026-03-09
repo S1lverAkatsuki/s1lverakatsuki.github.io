@@ -20,7 +20,7 @@ const BAR: String = {
     hasher.update(FOO.to_be_bytes());
     format!("{:x}", hasher.finalize())
 };
-// ⨉ 无法访问非常量函数
+// ⨉ 不能编译，无法访问非常量函数
 ```
 
 当然，可以用 `static` 来实现类似的功能。
@@ -44,6 +44,7 @@ lazy_static! {
 ```rust
 use std::sync::LazyLock;
 
+const FOO: i32 = 42;
 static BAR: LazyLock<String> = LazyLock::new(|| {
     use sha2::{Digest, Sha512};
     let mut hasher = Sha512::new();
@@ -78,8 +79,9 @@ static BAR: LazyLock<String> = LazyLock::new(|| {
   }
 
   // main.rs
+  mod add;
 
-  use crate::add;
+  use crate::add::add;
 
   fn main() {
       println!("{}", add(1, 1));
@@ -383,12 +385,13 @@ fn encode() -> Vec<u8> {
 如果觉得到处 `include!` 丑陋，这里有一个办法：
 
 ```rust
-// src/pb/mod.rs
+// src/pb.rs
 pub mod a {
-    include!("a.rs");
+    include!("pb/a.rs");
 }
 
 // src/main.rs
+mod pb;
 
 use crate::pb::a::Person;  // 这样按需引入
 ```
@@ -407,7 +410,7 @@ use crate::pb::a::Person;  // 这样按需引入
 - 权限不足：`403 Forbidden`
 - 请求的不存在：`404 Not Found` *最熟悉的一集*
 
-## 环境变量读取与借用 `dotenv` 库使用 `.env` 文件
+## 环境变量读取与使用 `.env` 文件
 
 环境变量可以方便把一些需要经常更改的内容从源码中提出来。
 
@@ -451,6 +454,7 @@ env::var("USER_PWD").unwrap_or_else(|_| "1234567890".to_string());
 struct Config {
     user_pwd: String
 }
+
 let config = envy::from_env::<Config>().unwrap();
 let user_pwd = config.user_pwd;
 ```
@@ -520,3 +524,18 @@ async fn main() {
     // ...
 }
 ```
+
+## 验证前端接口的方法
+
+开了后端后如何验证它在工作？
+最简单的就是写一个 JS 文件发请求：
+
+```js
+fetch("...")
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+```
+
+然后直接拿 node 跑。
+
+这样太蠢了，还是用 `crul` 命令吧，Windows 和 Linux 都有。
