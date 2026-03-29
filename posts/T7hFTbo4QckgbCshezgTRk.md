@@ -43,3 +43,13 @@ pnpm add @types/node --save-dev
   },
 }
 ```
+
+## 补充
+
+部分 lint 工具会提示 `ReferenceError: __dirname is not defined in ES module scope`
+
+只需要在 `vite.config.ts` 补上一句就行了：
+
+```ts
+const __dirname = import.meta.dirname;
+```
