@@ -514,3 +514,95 @@ fn main() {
     utils_func();
 }
 ```
+
+## Rust 测试的输出细节
+
+这里有一个非常简单的测试：
+
+```rust
+pub fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_add() {
+        let ans = add(2, 3);
+        assert_eq!(ans, 5);
+        println!("{}", ans);
+    }
+}
+```
+
+用 `cargo test` 去运行会发现其并没有任何输出。
+这是因为 Rust 会捕捉 stdout 里的内容，只有 stderr 里的才会有输出。
+加上 `--no-caputre` 参数就好了：
+
+```bash
+cargo test -- --no-capture
+```
+
+## 集成测试与单元测试
+
+用 `#[cfg(test)]` 在主要代码下组织的是单元测试，会随着代码本体的 crate 编译。
+一般情况下会单独分离出来，这样方便改而且避免测试在本体里拉屎。
+
+```rust
+// src/utils.rs
+pub fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+// src/main.rs
+use utils::add;
+
+fn main() {
+    println!("{}", add(2, 3));
+}
+```
+
+我们现在对它进行改造：
+
+```text
+my_crate
+├── 其他配置项...
+├── src
+│   ├── utils.rs
+│   ├── main.rs
+│   └── lib.rs  // <- 多了
+└── tests   // 专门的测试文件夹
+    └── test_add.rs  // 测试代码
+```
+
+这种就是所谓集成测试，它们不会以内联模块的方式编译到 `main.rs` 这个二进制 crate 里，而是作为「外部 crate 使用者」来编译。
+它只能测试库 crate，所以需要一个 `lib.rs` 导出。
+
+```rust
+// src/lib.rs
+pub mod utils;
+```
+
+这样在测试里就能用了：
+
+```rust
+// tests/test_add.rs
+use my_crate::utils::add; // 项目名叫 my_crate
+
+#[test]
+fn test_add_integration() {
+    assert_eq!(add(2, 3), 5);
+}
+```
+
+**Tip**：在 `lib.rs` 中保留内部独立可以减少导入树的长度：
+
+```rust
+// src/lib.rs
+mod utils;
+pub use utils::add;
+
+// tests/test_add.rs
+use my_crate::add;  // 少了中间层
+```
