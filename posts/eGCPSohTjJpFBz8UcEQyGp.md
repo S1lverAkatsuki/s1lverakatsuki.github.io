@@ -1,6 +1,6 @@
-# 使用 Lark 完成词法解析与 AST 构建
+# 使用 Lark 构建自定义文法解析器
 
-最近写了个作业需要用到表达式解析，考虑到自己写不出带错误恢复的自动机，于是遂选择直接导包。
+最近写了个作业需要用到表达式解析，考虑到自己写不出带错误恢复的自动机，于是遂选择直接导包。*这就是 Python 的生态啊（挺胸）*
 
 ```bash
 uv add lark
@@ -8,7 +8,7 @@ uv add lark
 
 用**后缀表达式**的例子来说一下这个包如何使用吧，如果你也要自定义文法然后解析的话。
 
-## 词法解析
+## 定义文法与语法分析
 
 尽管说后缀表达式用栈就能进行解析，但是还是给一个完整的文法定义吧：
 
@@ -16,6 +16,8 @@ uv add lark
 expr -> NUMBER 
       | expr expr OP
 ```
+
+文法里有**左递归**，管他呢，Lark 的 LALR 解析会处理好的，而且左递归还省栈空间呢。
 
 其中终结符 `NUMBER` 是操作数，`OP` 是加减乘除。
 Lark 使用一种魔改过的 **EBNF** 语法声明文法。
@@ -107,16 +109,20 @@ ASTNode = NumNode | OpNode
 QueryNode = ASTNode | Token
 
 class BuildAST(Transformer):
-    def number(self, items) -> NumNode:
-        # items[0] 是 Lark 的 Token 对象，转为数值
+    def number(self, items: list[QueryNode]) -> NumNode:
+        token = items[0]
+        assert isinstance(token, Token) # 检查 token 是否确实是 Token
         return {
             "type": "number",
-            "value": float(items[0])
+            "value": float(token.value)
         }
 
     def operation(self, items: list[QueryNode]) -> OpNode:
-        assert isinstance(op, Token)
-        assert not isinstance(left, Token)
+        left, right, op = items
+        assert isinstance(op, Token)    # 检查 op 是否确实是 Token
+
+        # 检查左右节点是否是已经处理好的类型（包含于 ASTNode 内） 
+        assert not isinstance(left, Token)  
         assert not isinstance(right, Token)
         return {
             "type": "op",
@@ -128,6 +134,8 @@ class BuildAST(Transformer):
 transformer = BuildAST()
 print(transformer.transform(token_tree))
 ```
+
+断言是为了方便调试，如果没有 Lark 只会在语法错误的时候给一个未知位置的 `AttributeError`，所以得靠断言来确定具体的错误位置。
 
 这时候就是输出可读可二次处理的对象了（手动加了空格方便读）：
 
@@ -152,4 +160,51 @@ print(transformer.transform(token_tree))
         'value': 3.0
     }
 }
+```
+
+## 类型限定更强的 Transformer
+
+```py
+from typing import TypedDict, Union, cast
+from lark import Transformer, Token
+
+class NumNode(TypedDict):
+    type: Literal["number"]
+    value: float
+
+class OpNode(TypedDict):
+    type: Literal["operator"]
+    operator: str
+    left: "ASTNode"  # 使用引号处理递归引用
+    right: "ASTNode"
+
+ASTNode = Union[NumNode, OpNode]
+
+class BuildAST(Transformer):
+    def number(self, items: list[Token]) -> NumNode:
+        # 限定 items 内部必须是 Token
+        token = items[0]
+        assert isinstance(token, Token)
+        return {
+            "type": "number",
+            "value": float(token.value)
+        }
+
+    def operation(self, items: list[Union[ASTNode, Token]]) -> OpNode:
+
+        match items:
+            # 根据文法: expr expr OP -> operation
+            # items[0] 和 items[1] 必定是已经计算好的 ASTNode
+            # items[2] 必定是 Token
+            case [left, right, Token() as op]:
+                return {
+                    "type": "operator",
+                    "operator": str(op.value),
+                    # 用 cast 让类型检查强制认定类型是 ASTNode
+                    "left": cast(ASTNode, left),
+                    "right": cast(ASTNode, right)
+                }
+            case _:
+                # 这里可以给一个更具体的错误，都已经精确到一个具体的产生式了
+                raise ValueError(f"Synax Error as: {items}")
 ```

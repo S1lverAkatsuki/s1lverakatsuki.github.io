@@ -19,7 +19,8 @@ const url2Blob = async (url: string): Promise<Blob> => {
 
 ## 项目中的 composables 文件夹
 
-[官方文档](https://cn.vuejs.org/guide/reusability/composables)
+> 参考：[组合式函数](https://cn.vuejs.org/guide/reusability/composables)
+
 响应式函数，负责解耦 `<script>` 标签，可以维护一个状态。  
 命名规则为 `use` + `CamelCase`，例如 `useEvenListener`：
 
@@ -213,7 +214,7 @@ class 内可以用空格分割多个参数，这是常识，对吧。
 
 ## :class 与 :display
 
-[官方文档](https://cn.vuejs.org/guide/essentials/class-and-style)
+> 参考：[Class 与 Style 绑定](https://cn.vuejs.org/guide/essentials/class-and-style)
 
 `:class` 是 `v-bind:class` 的简写，区别在于能否使用响应式变量。  
 最常用的应用是可选控制样式。  
