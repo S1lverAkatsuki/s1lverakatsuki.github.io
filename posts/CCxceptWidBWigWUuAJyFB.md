@@ -99,7 +99,8 @@
       "useTabs": false,
       "printWidth": 80,
       "bracketSpacing": true,
-      "arrowParens": "avoid"
+      "arrowParens": "avoid",
+      "singleAttributePerLine": true
     }
     ```
 
