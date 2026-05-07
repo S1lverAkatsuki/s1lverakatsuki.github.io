@@ -192,7 +192,7 @@ class BuildAST(Transformer):
 
     def operation(self, items: list[Union[ASTNode, Token]]) -> OpNode:
         match items:
-            # 根据文法: expr expr OP -> operation
+            # 根据文法: operation -> expr expr OP  
             # items[0] 和 items[1] 必定是已经计算好的 ASTNode
             # items[2] 必定是 Token
             case [left, right, Token() as op]:

@@ -104,6 +104,27 @@
     }
     ```
 
+    含义对应如下：
+
+    - `semi: true`
+        表示语句末尾保留分号。
+    - `singleQuote: false`
+        表示字符串默认使用双引号，不使用单引号。
+    - `trailingComma: "es5"`
+        表示在 ES5 支持的多行结构中保留尾随逗号，比如对象、数组等；函数参数通常不加。
+    - `tabWidth: 2`
+        表示缩进宽度按 2 个空格计算。
+    - `useTabs: false`
+        表示缩进使用空格，不使用 Tab。
+    - `printWidth: 80`
+        表示一行最大长度倾向控制在 80 个字符内，超出时会自动换行。
+    - `bracketSpacing: true`
+        表示对象字面量的大括号内保留空格，例如 `{ foo: bar }`。
+    - `arrowParens: "avoid"`
+        表示箭头函数只有一个参数时尽量省略括号，例如 `x => x + 2`，而不是 `(x) => x + 2`。
+    - `singleAttributePerLine: true`
+        表示在 HTML / JSX / Vue 这类标签中，每个属性单独占一行。
+
 11. 删掉 `src/App.vue` 里没必要的东西，删掉 `src/components/HelloWorld.vue` 我们不需要模板了。
 12. 给 `src/App.vue` 里 `<template>` 下第一个主容器添加类 `w-screen`，`h-screen`，`box-border`。
 13. 开始你的表演吧。

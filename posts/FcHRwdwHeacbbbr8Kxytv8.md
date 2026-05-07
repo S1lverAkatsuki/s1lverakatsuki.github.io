@@ -3,6 +3,8 @@
 *历经两年之久的整理*
 （立项的时候是 2024 年，直到最近才完成了编写）
 
+> 2026-05-04：新增章节「Web Storage API `sessionStorage` 存储网站信息」
+
 ## 一种通用的 composables 组合式函数结构
 
 ```ts
@@ -295,4 +297,48 @@ type RawUserJson = typeof userJson;
 type User = RawUserJson["user"];
 
 const user: User = userJson.user;
+```
+
+## Web Storage API `sessionStorage` 存储网站信息
+
+*我们不做小饼干*
+负责处理刷新后过滤器重置的问题，只要拿一个状态存起来就好了嘛。
+这是个比较新的 API，不过据 MDN 说支持的挺广的......吧。
+
+> 参考：[Web Storage API](https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Storage_API)
+
+用到的是 `sessionStorage`，它会在页面被关闭的时候自动清空，很适合这种随用随关的场景。
+而且没有隐私风险，也就意味着不需要询问用户是否同意保存，省事。
+
+这两个封装的函数很简单：
+
+```ts
+const loadFromStorage = <T, >(key: string, fallback: T): T => {
+  try {
+    const stored = sessionStorage.getItem(key);
+    return stored ? (JSON.parse(stored) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const saveToStorage = <T, >(key: string, value: T): void => {
+  sessionStorage.setItem(key, JSON.stringify(value));
+};
+```
+
+载入函数提供了回退项，以免载入失败 / 没有存储的时候出来个 `undefined` 恶心人。
+用起来也是一样的简单。
+
+```ts
+type User = {
+  name: string,
+  age: number
+};
+
+const user1: User = { name: "Yukari", age: 17 };
+
+saveToStorage<User>("user", user1);
+
+const loaded = loadeFromStorage<User>("user", { name: "aaa", age: 0 });
 ```
