@@ -96,7 +96,7 @@ SQLite 是个很棒的数据库！
 
 这里有几个模板可以用 `rusqlite` 库与 SQLite 数据库进行交互。
 
-> 参考: [Crate rusqlite](https://docs.rs/rusqlite/latest/rusqlite/index.html)
+> 参考：[Crate rusqlite](https://docs.rs/rusqlite/latest/rusqlite/index.html)
 
 ### `Connection::execute`
 
@@ -343,8 +343,8 @@ fn main() {
     std::fs::create_dir_all("src/pb").expect("Failed to create output directory");
 
     prost_build::Config::new()
-        .out_dir("src/pb") // 设置proto输出目录
-        .compile_protos(&["a.proto"], &["."]) // 要处理的proto文件
+        .out_dir("src/pb") // 设置 proto 输出目录
+        .compile_protos(&["a.proto"], &["."]) // 要处理的 proto 文件
         .expect("Failed to compile proto files");
 }
 ```

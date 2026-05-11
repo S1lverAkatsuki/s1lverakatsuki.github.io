@@ -1,6 +1,6 @@
 # ScholarAI-backend 开发笔记
 
-也即我参与 「2026 年软件工程实践」课程的记录。
+也即我参与「2026 年软件工程实践」课程的记录。
 没事找事与 *身为开发者的* 自傲作祟的产物，同时抱着写一个正经后端的想法开始了编写。
 会随项目进度的进展而更新。
 
@@ -195,13 +195,13 @@ pub struct RegisterSucceed {
 
 类比到 C++ 就是：
 
-| 🦀 | C++ |
-| -- | --- |
-| `T`, `mut T` | `T` |
-| `&T` | `const T&` |
-| `&mut T` | `T&` |
-| `mut &T` | `const T*` |
-| `mut &mut T` | `T*` |
+| 🦀           | C++        |
+| ------------ | ---------- |
+| `T`, `mut T` | `T`        |
+| `&T`         | `const T&` |
+| `&mut T`     | `T&`       |
+| `mut &T`     | `const T*` |
+| `mut &mut T` | `T*`       |
 
 ## Tracing 日志
 
@@ -405,7 +405,7 @@ CREATE TABLE person (
 
 <br/>
 
-> 参考：[JSON类型](https://postgres.ac.cn/docs/current/datatype-json.html)
+> 参考：[JSON 类型](https://postgres.ac.cn/docs/current/datatype-json.html)
 
 有两种 JSON 类型，原版文本文件的 `json` 和编码后的二进制 `jsonb`。前者写的快查的慢，后者相反。前者会保留空格和字段顺序这种后者认为无关紧要的信息。
 
@@ -466,7 +466,7 @@ SELECT * FROM orders WHERE info->'tags' @> '["电子"]';
 
 ## 靠 `mod.rs` 组织项目
 
-> 参考：[【rust】rsut基础：模块的使用一、mod关键字、mod.rs文件的含义等](https://www.cnblogs.com/night-ride-depart/p/17111306.html)
+> 参考：[【rust】rsut 基础：模块的使用一、mod 关键字、mod.rs 文件的含义等](https://www.cnblogs.com/night-ride-depart/p/17111306.html)
 > *怎么这都有错字的？*
 
 当前项目目录如下：

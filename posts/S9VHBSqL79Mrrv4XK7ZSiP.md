@@ -2,6 +2,8 @@
 
 [仓库地址](https://github.com/S1lverAkatsuki/llm-prompt-manager)
 
+> 2026-05-11 更新：【Vue `watch` 监听参数】【TS 闭包内变量缩窄类型】
+
 ## 前端
 
 ### Vue 的加载时间
@@ -257,6 +259,52 @@ const switchTheme = (toDarkMode: boolean) => {
 ### Tauri 提供的剪切板管理 API
 
 > 参考：[剪贴板](https://v2.tauri.org.cn/plugin/clipboard/)
+
+### Vue `watch` 监听参数
+
+> 参考：[侦听器](https://cn.vuejs.org/guide/essentials/watchers)
+
+当然 `watchEffect` 也适用。
+默认都为 `false`。
+
+#### `deep`
+
+对 `relative` 对象这个无影响，始终是深层监听。对 `ref` 对象，如果不加则只能在**整个对象被替换**的时候才能触发回调。
+
+#### `immediate`
+
+一般情况下响应式 `watch` 仅在原数据变动后才触发，加了这条后会在挂载响应式函数后立即触发一次。
+
+### TS 闭包内变量缩窄类型
+
+```ts
+const foo: number | null = 42;
+
+const func = () => {
+  if (foo === null) return;
+  
+  // ...
+  // foo 可能为 null !
+}
+```
+
+然后下面的逻辑都得带上感叹号非空断言（`foo!`）。
+这是为什么呢？明明我已经靠提前返回把空值排除在外了啊。
+是因为 TS 的类型缩窄对闭包不生效。闭包不会被立刻执行，而在它真正被调用的那一刻，`foo` 可能早就被别的地方改回 `null` 了。TS 的类型缩窄是保守的，它选择不信任你的提前返回。
+只要多个局部变量就好了。`const` 声明的局部变量不会被外部篡改，TS 就能放心把类型缩窄：
+
+```ts
+const foo: number | null = 42;
+
+const func = () => {
+  if (foo === null) return;
+  
+  const notNullFoo = foo;
+
+  // ...
+  // 用 notNullFoo 替代原有的 foo
+}
+```
 
 ## 后端
 

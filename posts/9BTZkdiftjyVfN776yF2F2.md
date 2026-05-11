@@ -27,7 +27,7 @@ const { containerRef } = useSomething();
 
 笨蛋智能感知是没法知道这个导出变量被使用，所以就开始大喊大叫了呢。
 
-![alt text](/posts/imgs/3XvHhz8VD98tGoSDtErcTg.png)
+![alt text](/posts/imgs/2EuNNahBppxp7bdFDMfbGC.png)
 
 ## 解法
 
@@ -54,3 +54,5 @@ const { ... } = useSomething(containerRef);
   <div ref="containerRef"></div>
 </template>
 ```
+
+_斜体_
