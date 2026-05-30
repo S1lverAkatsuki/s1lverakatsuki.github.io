@@ -3,6 +3,7 @@
 [仓库地址](https://github.com/S1lverAkatsuki/llm-prompt-manager)
 
 > 2026-05-11 更新：【Vue `watch` 监听参数】【TS 闭包内变量缩窄类型】
+> 2026-05-23 更新：【Toast 与 Dialog 的显示层级】
 
 ## 前端
 
@@ -305,6 +306,58 @@ const func = () => {
   // 用 notNullFoo 替代原有的 foo
 }
 ```
+
+### Toast 与 Dialog 的显示层级
+
+这里的 Toast，指的是用 Daisy UI 里提供的 `toast` 类实现的弹出式提示。而 Dialog 是原版 HTML 的 `<dialog>` 标签配合 Daisy UI 的 `model` 样式实现的交互窗口。
+
+我在写的时候，不知道 `<dialog>` 有个特性：这个标签里面的元素会被放到浏览器的顶层，与使用 `z-index` 字段控制的其他元素没关系，必定会在最上面。
+
+> 参考：[顶层](https://developer.mozilla.org/zh-CN/docs/Glossary/Top_layer)
+> *找了我半天，你直接打开和 dialog 标签相关的部分是找不到的*
+> *dialiog -> ::backdrop -> 顶层*
+
+我最开始试着把 Toast 的标签改到一个特别大的值，以及把 `<dialog>` 的 `z-index` 缩小，但还是发现不生效。
+既然 `<dialog>` 会让内部元素提升到顶层，那就把 Toast 放进去好了。
+
+于是我使用 Teleport 给 Toast 组件包了一层，在监听到 `body` 里有 `dialog[open]` 类的时候动态挂载进现在打开的 `<dialog>` 里面：
+
+> 参考：
+>
+> - 迁移 DOM 用的：[Teleport](https://cn.vuejs.org/guide/built-ins/teleport)
+> - 监听 DOM 树变化用的：[MutationObserver](https://developer.mozilla.org/zh-CN/docs/Web/API/MutationObserver)
+
+```ts
+const activeTeleportTarget = ref("body");
+
+const updateTeleportTarget = () => {
+  const activeDialog =
+    document.querySelector<HTMLDialogElement>("dialog[open]");
+  activeTeleportTarget.value = activeDialog ? "dialog[open]" : "body";
+};
+
+let observer: MutationObserver | null = null;
+
+onMounted(() => {
+  updateTeleportTarget();
+  observer = new MutationObserver(updateTeleportTarget);
+  observer.observe(document.body, {
+    attributes: true,
+    childList: true,
+    subtree: true,
+    attributeFilter: ["open"],
+  });
+});
+
+onBeforeUnmount(() => {
+  observer?.disconnect();
+  observer = null;
+});
+```
+
+在没有 `<dialog>` 的时候挂到 `<body>` 最下面，有的时候挂进 `<dialog>` 中。
+挂进去了就都在顶层了。
+这个实现有个 *现在还没体现的* Bug：如果有同时有好几个 `<dialog>` 会挂到找到的第一个里面。
 
 ## 后端
 
