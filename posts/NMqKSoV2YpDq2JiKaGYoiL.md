@@ -1,14 +1,14 @@
 # 前端背景视差动画
 
-在著名斯拉夫大牢《逃离塔科夫》中，游戏外菜单有个背景视差动画。
+在著名斯拉夫大牢《逃离塔科夫》的主菜单里，有个背景视差动画。
 
 <div align="center">
-<img src="/posts/imgs/oKfELqS5H8hbmArvTUFqw8.gif" alt="alt text" style="zoom: 30%"/>
+<img src="/posts/imgs/5RPZhd8JngcbbZufaLEaSK.gif" alt="alt text" style="zoom: 30%"/>
 </div>
 
 背景图片和前景的 UI 元素有个随鼠标移动而错位的效果。
 
-我们来实现这点。
+我们来实现一下。
 
 ## 原理
 
@@ -21,8 +21,7 @@ $$
 
 ## 具体实现
 
-和我经常用的技术栈一样，用的 Tailwind 来方便写样式，Vue 做框架。
-*我相信你能做得到迁移到你用的框架的！*
+和我平时用的技术栈一样，Tailwind 写样式，Vue 做框架。换你自己的框架也不难。
 
 ```html
 <script setup lang="ts">
@@ -41,7 +40,7 @@ const parallax = (e: MouseEvent) => {
   const mouseX = e.x;
   const mouseY = e.y;
 
-  const C: number = 0.05;   // 缩放系数，想要移动幅度更猛烈的话就调大
+  const C: number = 0.05;   // 缩放系数，想让画面跟着鼠标跑得猛一点就调大
   const deltaX = (centerX - mouseX) * C;
   const deltaY = (centerY - mouseY) * C;
 
@@ -81,13 +80,13 @@ onUnmounted(() => {
 效果如下：
 
 <div align="center">
-<img src="/posts/imgs/6zizto86PJbmTfLvT8nUK3.gif" alt="alt text" style="zoom: 30%"/>
+<img src="/posts/imgs/3xrv4vCg6H37mJ138yParv.gif" alt="alt text" style="zoom: 30%"/>
 </div>
 
 ## 问题
 
-如果位移缩放系数 `C` 改大了，那么原有的 `-inset-15` 就不能完全将背景图缩放到不会出界的范围，随着鼠标拖动就会露出背景图下的白底。
-那就不用固定的 CSS 样式处理好了，去除样式中的 `-inset-15` 改为 `inset-0` 单纯占满整个视口，然后用 JS 缩放：
+如果位移缩放系数 `C` 改大了，`-inset-15` 就撑不住背景图不出界的范围了，鼠标一拖就会露出底下的白底。
+那就别用固定 CSS 了，把 `-inset-15` 改成 `inset-0` 让背景单纯铺满视口，用 JS 来缩放：
 
 ```ts
 // ...位移函数内部
@@ -96,7 +95,7 @@ parallaxLayerRef.value.style.transform = `translate(${deltaX}px, ${deltaY}px) sc
 
 ## 性能优化
 
-如果用网站的人是个电竞小子，拿着回报率超高的鼠标，频繁更新网站会卡爆的。
+如果用户的鼠标回报率很高，`mousemove` 事件会触发得会非常频繁，不处理的话性能吃不消。
 用 `requestAnimationFrame` 将整个动画部分包裹起来，让每一次重绘之前执行一次动画，频率和刷新率有关。
 
 > 参考：[Window：requestAnimationFrame() 方法](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/requestAnimationFrame)
@@ -127,7 +126,7 @@ const parallax = (e: MouseEvent) => {
 
     parallaxLayerRef.value.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${1 + C})`;
 
-    ticking = false;  // 跑完动画才重置回可用状态
+    ticking = false;  // 跑完一帧才重置
   });
 };
 ```
@@ -137,33 +136,33 @@ const parallax = (e: MouseEvent) => {
 如果把鼠标指针移出屏幕，那么会有一个很奇怪的现象：
 
 <div align="center">
-<img src="/posts/imgs/9nMuHnxAmNYGBcvK3CMJCG.gif" alt="alt text" style="zoom: 30%"/>
+<img src="/posts/imgs/nQqhAQnK4tjG3tnv69wYqp.gif" alt="alt text" style="zoom: 30%"/>
 </div>
 
-虽然听起来很令人郁闷，但是他们真的做的很好：
+虽然看起来不太自然，有个视差库（后面会说）做得挺好的：
 
 <div align="center">
-<img src="/posts/imgs/3Mmbe38C5AZRZyq12xg5Qx.gif" alt="alt text" style="zoom: 30%"/>
+<img src="/posts/imgs/jvkYapVzTz7PBo8SPjFuAd.gif" alt="alt text" style="zoom: 30%"/>
 </div>
 
-因为我们的只是对图片本身的坐标进行变换，并没有做什么渐进的动画。
-将目标偏移和当前偏移区分开来就可以写出追赶的动画。
-这需要进行一次超级大的改动欸：
+如果我们只是对图片坐标做变换，没有做渐进动画的话，移出屏幕的瞬间画面一下就僵住了。
+而样例就不一样，它有缓动追赶的效果。*准确来说，应该叫做「线性插值」吧*
+所以要把目标偏移和当前偏移区分开，让背景追着鼠标跑。改动会比较大：
 
 ```ts
 import { onMounted, onUnmounted, ref } from "vue";
 
 const C: number = 0.5;
-const EAST: number = 0.08; // 这是动画速度，调的越快越接近瞬移
+const EASE: number = 0.08; // 动画速度，调得越快越像瞬移
 
 const appRootRef = ref<HTMLElement | null>(null);
 const parallaxLayerRef = ref<HTMLElement | null>(null);
 
-let targetX = 0;
-let targetY = 0;
-let currentX = 0;
-let currentY = 0;
-let animFrameId: number | null = null;  // 取代了 track，因为好像 requestAnimationFrame 能直接返回一个 ID，不需要额外弄一个布尔值来标记
+let targetX: number = 0;
+let targetY: number = 0;
+let currentX: number = 0;
+let currentY: number = 0;
+let animFrameId: number | null = null;  // requestAnimationFrame 自己就能返回 ID，也就不需要手动维护一个布尔值了
 
 const parallax = (e: MouseEvent) => {
   if (!appRootRef.value) return;
@@ -177,8 +176,8 @@ const parallax = (e: MouseEvent) => {
 };
 
 const animate = () => {
-  currentX += (targetX - currentX) * EAST;
-  currentY += (targetY - currentY) * EAST;
+  currentX += (targetX - currentX) * EASE;
+  currentY += (targetY - currentY) * EASE;
 
   if (parallaxLayerRef.value) {
     parallaxLayerRef.value.style.transform = `translate(${currentX}px, ${currentY}px) scale(${1 + C})`;
@@ -190,9 +189,7 @@ const animate = () => {
 onMounted(() => {
   window.addEventListener("mousemove", parallax);
   animFrameId = requestAnimationFrame(animate);
-  // 把更新当前偏移量的函数同更新鼠标坐标计算目标偏移量的函数分开了
-  // 同样，动画对象也不会一直创建了，只在页面生命周期结束的时候才销毁
-  // 如果目标偏移量同当前偏移量相等也没有动画的事，一旦鼠标动了更新了目标偏移量那动画才有效果
+  // 分开了更新当前偏移的逻辑和计算目标偏移的逻辑
 });
 
 onUnmounted(() => {
@@ -204,9 +201,9 @@ onUnmounted(() => {
 });
 ```
 
-## 用库逃课
+## 用现成的库
 
-*果然还是 JS 生态的终点吗，还是不如现成的轮子呢*
-有个库叫做 [parallax.js](https://github.com/wagerfield/parallax)，它可以轻松实现这里面的功能。
-而且支持分层视差，不同层的位移幅度不同，而不仅仅是背景的相对位移。
-如果我去实际做东西肯定用这个库。
+有个库叫 [parallax.js](https://github.com/wagerfield/parallax)，上面这些东西它直接就能实现。
+而且还支持分层视差，不同层位移幅度不一样，不只是背景动一下那么简单。
+真要做东西的话还是用它省事。
+*果然这就是 JS 生态的终点啊，一切转导包*
