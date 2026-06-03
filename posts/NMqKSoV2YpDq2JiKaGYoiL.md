@@ -3,7 +3,7 @@
 在著名斯拉夫大牢《逃离塔科夫》的主菜单里，有个背景视差动画。
 
 <div align="center">
-<img src="/posts/imgs/5RPZhd8JngcbbZufaLEaSK.gif" alt="alt text" style="zoom: 30%"/>
+<img src="/posts/imgs/2MbFH8MfjkwTCwVEtmxf9P.gif" alt="alt text" style="zoom: 30%"/>
 </div>
 
 背景图片和前景的 UI 元素有个随鼠标移动而错位的效果。
@@ -80,7 +80,7 @@ onUnmounted(() => {
 效果如下：
 
 <div align="center">
-<img src="/posts/imgs/3xrv4vCg6H37mJ138yParv.gif" alt="alt text" style="zoom: 30%"/>
+<img src="/posts/imgs/pbqENdFL2wsR85vGofYEXD.gif" alt="alt text" style="zoom: 30%"/>
 </div>
 
 ## 问题
@@ -136,13 +136,13 @@ const parallax = (e: MouseEvent) => {
 如果把鼠标指针移出屏幕，那么会有一个很奇怪的现象：
 
 <div align="center">
-<img src="/posts/imgs/nQqhAQnK4tjG3tnv69wYqp.gif" alt="alt text" style="zoom: 30%"/>
+<img src="/posts/imgs/oPL2VWJ7SHHTDadj2ixJ7K.gif" alt="alt text" style="zoom: 30%"/>
 </div>
 
 虽然看起来不太自然，有个视差库（后面会说）做得挺好的：
 
 <div align="center">
-<img src="/posts/imgs/jvkYapVzTz7PBo8SPjFuAd.gif" alt="alt text" style="zoom: 30%"/>
+<img src="/posts/imgs/d3sG9cw8QpNfQbc2bLeLgz.gif" alt="alt text" style="zoom: 30%"/>
 </div>
 
 如果我们只是对图片坐标做变换，没有做渐进动画的话，移出屏幕的瞬间画面一下就僵住了。
