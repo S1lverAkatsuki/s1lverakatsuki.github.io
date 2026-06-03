@@ -27,7 +27,7 @@ const { containerRef } = useSomething();
 
 笨蛋智能感知是没法知道这个导出变量被使用，所以就开始大喊大叫了呢。
 
-![alt text](/posts/imgs/jSMVLXMuqE64YdnFb8dYFp.png)
+![alt text](/posts/imgs/7AQc6fV7vu21WgDjz16NuV.png)
 
 ## 解法
 
